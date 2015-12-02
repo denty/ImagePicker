@@ -100,9 +100,10 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+#pragma mark - UITableViewDataSource
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     
-    return groupArray.count;
+    return groupArray.count+1;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -110,8 +111,8 @@
     return 70;
 }
 
--(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    
+-(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
     static NSString* identify = @"cell";
     
     UITableViewCell* cell = [tableView dequeueReusableCellWithIdentifier:identify];
@@ -128,43 +129,54 @@
         [detailTextLabel setFont:[UIFont systemFontOfSize:13]];
         [cell.contentView addSubview:detailTextLabel];
     }
-    
-    ALAssetsGroup *group = [groupArray objectAtIndex:(groupArray.count-1)-indexPath.row];
-    UIImage *groupImage = [groupImageArray objectAtIndex:(groupArray.count-1)-indexPath.row];
-    [group setAssetsFilter:[ALAssetsFilter allPhotos]];//过滤视频
-    
-    NSString* name =[group valueForProperty:ALAssetsGroupPropertyName];
-    if ([name  isEqual: @"Camera Roll"]) {
-        name = @"相机胶卷";
+    if (indexPath.row == 0)
+    {
+        UIImageView *imageView = (UIImageView *)[cell.contentView viewWithTag:imageViewTag];
+        [imageView setContentMode:UIViewContentModeScaleAspectFill];
+        [imageView setClipsToBounds:YES];
+        [imageView setImage:[UIImage imageNamed:@"sample"]];
+        
+        UILabel *textLabel = (UILabel*)[cell.contentView viewWithTag:textLabelTag];
+        textLabel.text = @"拍摄";
     }
-    UIImageView *imageView = (UIImageView *)[cell.contentView viewWithTag:imageViewTag];
-    [imageView setContentMode:UIViewContentModeScaleAspectFill];
-    [imageView setClipsToBounds:YES];
-    [imageView setImage:groupImage];
-    
-    UILabel *textLabel = (UILabel*)[cell.contentView viewWithTag:textLabelTag];
-    textLabel.text = name;
-    
-    UILabel *detailTextLabel = (UILabel*)[cell.contentView viewWithTag:detailTextLabelTag];
-    detailTextLabel.text = [NSString stringWithFormat:@"%d",(int)[group numberOfAssets]];
-    
-//    cell.textLabel.text = name;
-//    cell.detailTextLabel.text = [NSString stringWithFormat:@"%d",(int)[group numberOfAssets]];
-    
+    else
+    {
+        ALAssetsGroup *group = [groupArray objectAtIndex:(groupArray.count-1)-(indexPath.row-1)];
+        UIImage *groupImage = [groupImageArray objectAtIndex:(groupArray.count-1)-(indexPath.row-1)];
+        [group setAssetsFilter:[ALAssetsFilter allPhotos]];//过滤视频
+        
+        NSString* name =[group valueForProperty:ALAssetsGroupPropertyName];
+        if ([name  isEqual: @"Camera Roll"]) {
+            name = @"相机胶卷";
+        }
+        UIImageView *imageView = (UIImageView *)[cell.contentView viewWithTag:imageViewTag];
+        [imageView setContentMode:UIViewContentModeScaleAspectFill];
+        [imageView setClipsToBounds:YES];
+        [imageView setImage:groupImage];
+        
+        UILabel *textLabel = (UILabel*)[cell.contentView viewWithTag:textLabelTag];
+        textLabel.text = name;
+        
+        UILabel *detailTextLabel = (UILabel*)[cell.contentView viewWithTag:detailTextLabelTag];
+        detailTextLabel.text = [NSString stringWithFormat:@"%d",(int)[group numberOfAssets]];
+    }
     return cell;
-//    cell.imageView.image = [UIImage imageWithCGImage:group.posterImage];
-   
 }
 
+#pragma mark - UITableViewDelegate
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
-    SGMPhotosViewController* viewVC = [[SGMPhotosViewController alloc]init];
-    viewVC.group =[groupArray objectAtIndex:(groupArray.count-1)-indexPath.row];
-    viewVC.limitNum = limitNum;
-    viewVC.delegate = self;
-    [self.navigationController pushViewController:viewVC animated:YES];
-
+    if (indexPath.row == 0) {
+        
+    }
+    else
+    {
+        SGMPhotosViewController* viewVC = [[SGMPhotosViewController alloc]init];
+        viewVC.group =[groupArray objectAtIndex:(groupArray.count-1)-(indexPath.row-1)];
+        viewVC.limitNum = limitNum;
+        viewVC.delegate = self;
+        [self.navigationController pushViewController:viewVC animated:YES];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
