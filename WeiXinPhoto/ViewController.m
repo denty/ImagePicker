@@ -83,9 +83,20 @@
     if (cell == nil) {
         cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identify];
     }
-
-    ALAsset *asset = [[selectedPhotoArray objectAtIndex:indexPath.row] objectForKey:@"asset"];
-    cell.imageView.image = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];
+    if ([[selectedPhotoArray objectAtIndex:indexPath.row] isKindOfClass:[NSDictionary class]])
+    {
+        ALAsset *asset = [[selectedPhotoArray objectAtIndex:indexPath.row] objectForKey:@"asset"];
+        cell.imageView.image = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullScreenImage]];
+    }
+    if ([[selectedPhotoArray objectAtIndex:indexPath.row] isKindOfClass:[UIImage class]])
+    {
+        cell.imageView.image = [selectedPhotoArray objectAtIndex:indexPath.row];
+    }
+    else
+    {
+        NSLog(@"类型错误");
+    }
+    
     
     return cell;
 }

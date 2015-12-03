@@ -233,7 +233,7 @@
         UIImagePickerController *picker = [[UIImagePickerController alloc] init];
         picker.delegate = self;
         //设置拍照后的图片可被编辑
-        picker.allowsEditing = YES;
+        picker.allowsEditing = NO;
         picker.sourceType = sourceType;
         [self presentViewController:picker animated:YES completion:nil];
     }else
@@ -242,5 +242,30 @@
     }
 }
 
+#pragma mark - takePhotoDelegate
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
+{
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    //打印出字典中的内容
+    //DMLog( info );
+    ////获取媒体类型
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        NSString * mediaType = [info objectForKey:UIImagePickerControllerMediaType];
+        //判断是 静态图像 还是 视频
+        if ([mediaType isEqualToString:@"public.image"])
+        {
+            UIImage * GetImage = [info objectForKey: UIImagePickerControllerOriginalImage ];
+            NSData * data = UIImageJPEGRepresentation( GetImage , 0.4 );
+            GetImage = [UIImage imageWithData: data ];
+            if ([strongSelf.delegate respondsToSelector:@selector(sendImageWithAssetsArray:)])
+            {
+                [strongSelf.delegate sendImageWithAssetsArray:[[NSArray alloc] initWithObjects:GetImage, nil]];
+                [strongSelf dismissViewControllerAnimated:YES completion:nil];
+            }
+        }
+    });
 
+}
 @end
